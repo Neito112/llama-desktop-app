@@ -42,9 +42,9 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 12px;
-  z-index: 100;
+  z-index: 9999;
   white-space: nowrap;
-  overflow: hidden;
+  overflow: visible !important;
   position: relative;
 }
 
@@ -106,6 +106,7 @@ body {
   position: relative;
   display: inline-block;
   flex-shrink: 0;
+  z-index: 10000;
 }
 
 .btn-load-model {
@@ -163,10 +164,10 @@ body {
   left: 0;
   width: 300px;
   background: #121722;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7), 0 0 20px rgba(99, 102, 241, 0.15);
-  z-index: 150;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.95), 0 0 25px rgba(99, 102, 241, 0.3);
+  z-index: 100000 !important;
   padding: 8px 0;
   font-size: 12px;
   transition: all 0.2s ease;
