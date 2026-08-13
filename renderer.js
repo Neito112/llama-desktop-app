@@ -270,15 +270,65 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Mini Mode 3 Controls Event Handlers
+  const miniOverflowDropdown = document.getElementById('miniOverflowDropdown');
+  const miniMenuItemDownloadModel = document.getElementById('miniMenuItemDownloadModel');
+  const miniMenuItemLoadModel = document.getElementById('miniMenuItemLoadModel');
+  const miniMenuItemStopModel = document.getElementById('miniMenuItemStopModel');
+  const miniMenuItemCopyGateway = document.getElementById('miniMenuItemCopyGateway');
+  const miniMenuItemToggleLang = document.getElementById('miniMenuItemToggleLang');
+  const miniMenuItemExitMini = document.getElementById('miniMenuItemExitMini');
+
   if (btnMiniExit) {
     btnMiniExit.addEventListener('click', () => setMiniModeState(false));
   }
 
-  if (btnMiniMenu) {
+  if (btnMiniMenu && miniOverflowDropdown) {
     btnMiniMenu.addEventListener('click', (e) => {
       e.stopPropagation();
-      overflowDropdown.classList.toggle('hidden');
+      miniOverflowDropdown.classList.toggle('hidden');
       modelDropdown.classList.add('hidden');
+    });
+  }
+
+  if (miniMenuItemDownloadModel) {
+    miniMenuItemDownloadModel.addEventListener('click', () => {
+      if (miniOverflowDropdown) miniOverflowDropdown.classList.add('hidden');
+      btnOpenModelModal.click();
+    });
+  }
+
+  if (miniMenuItemLoadModel) {
+    miniMenuItemLoadModel.addEventListener('click', () => {
+      if (miniOverflowDropdown) miniOverflowDropdown.classList.add('hidden');
+      btnLoadModel.click();
+    });
+  }
+
+  if (miniMenuItemStopModel) {
+    miniMenuItemStopModel.addEventListener('click', () => {
+      if (miniOverflowDropdown) miniOverflowDropdown.classList.add('hidden');
+      btnStopActiveModel.click();
+    });
+  }
+
+  if (miniMenuItemCopyGateway) {
+    miniMenuItemCopyGateway.addEventListener('click', () => {
+      if (miniOverflowDropdown) miniOverflowDropdown.classList.add('hidden');
+      btnCopyGateway.click();
+    });
+  }
+
+  if (miniMenuItemToggleLang) {
+    miniMenuItemToggleLang.addEventListener('click', () => {
+      if (miniOverflowDropdown) miniOverflowDropdown.classList.add('hidden');
+      toggleViTranslation();
+    });
+  }
+
+  if (miniMenuItemExitMini) {
+    miniMenuItemExitMini.addEventListener('click', () => {
+      if (miniOverflowDropdown) miniOverflowDropdown.classList.add('hidden');
+      setMiniModeState(false);
     });
   }
 
@@ -298,8 +348,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!modelDropdown.contains(e.target) && e.target !== btnLoadModel) {
       modelDropdown.classList.add('hidden');
     }
-    if (!overflowDropdown.contains(e.target) && e.target !== btnTopbarOverflow && e.target !== btnMiniMenu) {
+    if (!overflowDropdown.contains(e.target) && e.target !== btnTopbarOverflow) {
       overflowDropdown.classList.add('hidden');
+    }
+    if (miniOverflowDropdown && !miniOverflowDropdown.contains(e.target) && e.target !== btnMiniMenu) {
+      miniOverflowDropdown.classList.add('hidden');
     }
   });
 
@@ -520,6 +573,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         activeModelName.textContent = modelObj.shortName;
         activeModelBadge.classList.remove('hidden');
+        if (miniMenuItemStopModel) miniMenuItemStopModel.classList.remove('hidden');
 
         // Re-check overflow since activeModelBadge is now visible
         setTimeout(updateOverflow, 200);
@@ -544,6 +598,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (confirm('Bạn có chắc muốn tắt Model Server hiện tại để giải phóng RAM/VRAM?')) {
       await window.electronAPI.stopServer();
       activeModelBadge.classList.add('hidden');
+      if (miniMenuItemStopModel) miniMenuItemStopModel.classList.add('hidden');
       serverStoppedState.classList.remove('hidden');
       dashboardFrame.src = 'about:blank';
       currentActiveModel = null;

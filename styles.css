@@ -500,7 +500,6 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  -webkit-app-region: no-drag;
 }
 
 .mini-controls-group.hidden {
@@ -519,7 +518,6 @@ body {
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-  -webkit-app-region: no-drag;
 }
 
 /* Nút 1: Exit Mini Mode (✕) - Red Glow */
@@ -527,6 +525,7 @@ body {
   background: rgba(239, 68, 68, 0.25);
   border: 1px solid rgba(239, 68, 68, 0.6);
   color: #fca5a5;
+  -webkit-app-region: no-drag !important;
 }
 
 .mini-btn-close:hover {
@@ -542,6 +541,7 @@ body {
   background: rgba(99, 102, 241, 0.25);
   border: 1px solid rgba(99, 102, 241, 0.6);
   color: #c084fc;
+  -webkit-app-region: no-drag !important;
 }
 
 .mini-btn-menu:hover {
@@ -558,7 +558,7 @@ body {
   border: 1px solid rgba(245, 158, 11, 0.6);
   color: #fde047;
   cursor: grab;
-  -webkit-app-region: drag;
+  -webkit-app-region: drag !important;
 }
 
 .mini-btn-drag:hover {

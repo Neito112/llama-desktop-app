@@ -90,9 +90,24 @@
         <button class="mini-btn mini-btn-close" id="btnMiniExit" title="Thoát chế độ Thu nhỏ (Quay về cửa sổ lớn)">
           ✕
         </button>
-        <button class="mini-btn mini-btn-menu" id="btnMiniMenu" title="Menu chức năng thanh công cụ">
-          ▼
-        </button>
+        <div class="dropdown-wrapper">
+          <button class="mini-btn mini-btn-menu" id="btnMiniMenu" title="Menu chức năng thanh công cụ">
+            ▼
+          </button>
+          <div class="dropdown-menu hidden dropdown-menu-right" id="miniOverflowDropdown">
+            <div class="dropdown-header">
+              <span>Menu Chức Năng Nhanh</span>
+            </div>
+            <div class="dropdown-list overflow-menu-list">
+              <div class="overflow-item" id="miniMenuItemDownloadModel">📥 Tải model mới</div>
+              <div class="overflow-item" id="miniMenuItemLoadModel">⚡ Load model</div>
+              <div class="overflow-item hidden" id="miniMenuItemStopModel">⏹ Tắt Server Model</div>
+              <div class="overflow-item" id="miniMenuItemCopyGateway">📋 Sao chép Gateway API</div>
+              <div class="overflow-item" id="miniMenuItemToggleLang">🌐 Bật/Tắt Tiếng Việt</div>
+              <div class="overflow-item" id="miniMenuItemExitMini">📌 Phóng to cửa sổ</div>
+            </div>
+          </div>
+        </div>
         <div class="mini-btn mini-btn-drag" id="btnMiniDrag" title="Ấn giữ 💠 để di chuyển vị trí cửa sổ">
           💠
         </div>
