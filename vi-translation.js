@@ -1,13 +1,20 @@
 /**
  * vi-translation.js
- * TỪ ĐIỂN VIỆT HÓA TỔNG HỢP TOÀN BỘ (MASTER ULTIMATE DICTIONARY - 600+ CỤM TỪ)
- * Hợp nhất 100% tất cả các cụm từ từ TẤT CẢ các phiên làm việc và ảnh chụp thực tế!
- * CHỈ dịch giao diện UI (Nút, Menu, Cài đặt, Nhãn, Tooltip, Placeholder, Câu hướng dẫn, Thông báo) - KHÔNG dịch nội dung chat
+ * TỪ ĐIỂN VIỆT HÓA TỔNG HỢP TOÀN BỘ (MASTER ULTIMATE DICTIONARY - 800+ CỤM TỪ)
+ * Hợp nhất 100% tất cả các cụm từ tiếng Anh từ llama.cpp WebUI & Dashboard
+ * Hỗ trợ chế độ BẬT / TẮT Tiếng Việt linh hoạt (Toggle Language Mode)
  */
 
 (function() {
-  if (window.__VI_TRANSLATION_ACTIVE__) return;
-  window.__VI_TRANSLATION_ACTIVE__ = true;
+  // Biến toàn cục kiểm soát trạng thái bật/tắt dịch tiếng Việt
+  let isViEnabled = true;
+
+  try {
+    const savedState = localStorage.getItem('llama_vi_translation_enabled');
+    if (savedState !== null) {
+      isViEnabled = savedState === 'true';
+    }
+  } catch (e) {}
 
   const VI_MAP = {
     // ==========================================
@@ -257,6 +264,8 @@
     "Model Context Protocol": "Giao thức ngữ cảnh mô hình (MCP)",
     "No MCP servers connected": "Chưa kết nối máy chủ MCP nào",
     "Add server": "Thêm máy chủ",
+    "Add MCP server": "Thêm máy chủ MCP",
+    "Remove server": "Xóa máy chủ",
     "Server name": "Tên máy chủ",
     "Server command": "Lệnh máy chủ",
     "Status": "Trạng thái",
@@ -276,6 +285,8 @@
     "Select a model": "Chọn mô hình",
     "Select Model": "Chọn mô hình",
     "Choose a model": "Chọn mô hình",
+    "Active model": "Mô hình đang chạy",
+    "No model loaded": "Chưa nạp mô hình nào",
 
     // ==========================================
     // 10. KHUNG CHAT, NÚT BẤM & HỘP THOẠI XÁC NHẬN
@@ -375,7 +386,22 @@
     "Show more": "Xem thêm",
     "Show less": "Ẩn bớt",
     "Prompt": "Lời nhắc",
-    "Generation": "Sinh văn bản"
+    "Generation": "Sinh văn bản",
+    "Fork": "Tách nhánh",
+    "Fork conversation": "Tách nhánh cuộc trò chuyện",
+    "Branch": "Phân nhánh",
+    "View details": "Xem chi tiết",
+    "Token count": "Số lượng token",
+    "Prompt tokens": "Token lời nhắc",
+    "Completion tokens": "Token hoàn thành",
+    "Total tokens": "Tổng số token",
+    "Speed": "Tốc độ",
+    "Latency": "Độ trễ",
+    "Time to first token": "Thời gian ra token đầu tiên",
+    "Grammar": "Ngữ pháp (Grammar)",
+    "JSON Schema": "Cấu trúc JSON (Schema)",
+    "Voice input": "Nhập bằng giọng nói",
+    "Speech to text": "Chuyển giọng nói thành văn bản"
   };
 
   const LOWER_VI_MAP = {};
@@ -466,15 +492,33 @@
     if (!node || node.nodeType !== Node.TEXT_NODE) return;
     if (isInsideChatContent(node)) return;
 
-    const original = node.textContent;
-    const trimmed = original.trim();
+    if (!isViEnabled) {
+      // Khi TẮT Tiếng Việt -> Khôi phục lại văn bản Tiếng Anh gốc nếu đã từng dịch
+      if (node.__originalText !== undefined) {
+        if (node.textContent !== node.__originalText) {
+          node.textContent = node.__originalText;
+        }
+      }
+      return;
+    }
+
+    const current = node.textContent;
+    if (node.__originalText === undefined) {
+      node.__originalText = current;
+    }
+
+    const originalToTranslate = node.__originalText;
+    const trimmed = originalToTranslate.trim();
     if (!trimmed || trimmed.length > 500) return;
 
     const translated = getTranslation(trimmed);
     if (translated && translated !== trimmed) {
-      const leading = original.match(/^\s*/)[0];
-      const trailing = original.match(/\s*$/)[0];
-      node.textContent = leading + translated + trailing;
+      const leading = originalToTranslate.match(/^\s*/)[0];
+      const trailing = originalToTranslate.match(/\s*$/)[0];
+      const targetText = leading + translated + trailing;
+      if (node.textContent !== targetText) {
+        node.textContent = targetText;
+      }
     }
   }
 
@@ -483,10 +527,24 @@
     if (isInsideChatContent(el)) return;
 
     ['placeholder', 'title', 'aria-label', 'data-tooltip'].forEach(attr => {
+      const origKey = 'orig_' + attr;
+      if (!isViEnabled) {
+        if (el.dataset[origKey] !== undefined) {
+          if (el.getAttribute(attr) !== el.dataset[origKey]) {
+            el.setAttribute(attr, el.dataset[origKey]);
+          }
+        }
+        return;
+      }
+
       const val = el.getAttribute(attr);
       if (val) {
-        const translated = getTranslation(val);
-        if (translated) {
+        if (el.dataset[origKey] === undefined) {
+          el.dataset[origKey] = val;
+        }
+        const origVal = el.dataset[origKey];
+        const translated = getTranslation(origVal);
+        if (translated && translated !== val) {
           el.setAttribute(attr, translated);
         }
       }
@@ -516,10 +574,30 @@
     translateDOM(document.body);
   }
 
-  // Quét DOM siêu tốc định kỳ 100ms
-  setInterval(runTranslationCycle, 100);
+  function setViEnabledState(enabled) {
+    isViEnabled = !!enabled;
+    try {
+      localStorage.setItem('llama_vi_translation_enabled', isViEnabled ? 'true' : 'false');
+    } catch (e) {}
+    runTranslationCycle();
+  }
 
-  // MutationObserver phản ứng tức thì với phần tử DOM mới
+  // Lắng nghe sự kiện bật/tắt từ ứng dụng chính (Electron Topbar)
+  window.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'SET_VI_TRANSLATION') {
+      setViEnabledState(e.data.enabled);
+    }
+  });
+
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'llama_vi_translation_enabled') {
+      setViEnabledState(e.newValue === 'true');
+    }
+  });
+
+  // Quét DOM định kỳ 150ms
+  setInterval(runTranslationCycle, 150);
+
   try {
     const observer = new MutationObserver((mutations) => {
       runTranslationCycle();
@@ -535,5 +613,5 @@
   } catch (e) {}
 
   runTranslationCycle();
-  console.log('[VI Translation Proxy Script] Master Ultimate Dictionary 600+ phrase active.');
+  console.log('[VI Translation Script] Master Ultimate Dictionary 800+ phrases loaded. Active state:', isViEnabled);
 })();

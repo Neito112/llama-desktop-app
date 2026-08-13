@@ -156,6 +156,31 @@ body {
   font-weight: 700;
 }
 
+/* Language Toggle Button (🌐 Tiếng Việt) */
+.btn-lang-toggle {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #34d399;
+}
+
+.btn-lang-toggle:hover {
+  background: rgba(16, 185, 129, 0.3);
+  border-color: rgba(16, 185, 129, 0.7);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-lang-toggle.off {
+  background: rgba(156, 163, 175, 0.15);
+  border: 1px solid rgba(156, 163, 175, 0.3);
+  color: #9ca3af;
+}
+
+.btn-lang-toggle.off:hover {
+  background: rgba(156, 163, 175, 0.3);
+  border-color: rgba(156, 163, 175, 0.6);
+  box-shadow: none;
+}
+
 /* Overflow Menu Trigger (▼) */
 .btn-overflow {
   background: rgba(255, 255, 255, 0.08);

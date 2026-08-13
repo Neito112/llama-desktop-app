@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const copyToast = document.getElementById('copyToast');
   const noteInput = document.getElementById('noteInput');
   const btnToggleMini = document.getElementById('btnToggleMini');
+  const btnToggleLang = document.getElementById('btnToggleLang');
 
   const btnOpenModelModal = document.getElementById('btnOpenModelModal');
   const modelModal = document.getElementById('modelModal');
@@ -45,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const LLAMA_MODELS_URL = 'https://llama.app/models';
 
   let currentActiveModel = null;
+  let isViTranslationEnabled = localStorage.getItem('llama_vi_translation_enabled') !== 'false';
 
   // =============================================
   // RESPONSIVE OVERFLOW DETECTION SYSTEM
@@ -55,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'activeModelBadge': () => btnStopActiveModel.click(),
     'btnCopyGateway': () => btnCopyGateway.click(),
     'btnToggleMini': () => setMiniModeState(),
+    'btnToggleLang': () => toggleViTranslation(),
     'noteContainer': null,
   };
 
@@ -151,6 +154,60 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   setTimeout(updateOverflow, 200);
+
+  // =============================================
+  // LANGUAGE TOGGLE SYSTEM (BẬT / TẮT TIẾNG VIỆT)
+  // =============================================
+  function updateLangBtnUI() {
+    if (!btnToggleLang) return;
+    if (isViTranslationEnabled) {
+      btnToggleLang.innerHTML = '🌐 Tiếng Việt: BẬT';
+      btnToggleLang.classList.remove('off');
+      btnToggleLang.title = 'Đang BẬT dịch giao diện Tiếng Việt (Bấm để chuyển về Tiếng Anh gốc)';
+    } else {
+      btnToggleLang.innerHTML = '🌐 Tiếng Việt: TẮT';
+      btnToggleLang.classList.add('off');
+      btnToggleLang.title = 'Đang TẮT dịch giao diện (Bấm để dịch giao diện sang Tiếng Việt)';
+    }
+  }
+
+  function toggleViTranslation(forceState) {
+    if (typeof forceState === 'boolean') {
+      isViTranslationEnabled = forceState;
+    } else {
+      isViTranslationEnabled = !isViTranslationEnabled;
+    }
+    localStorage.setItem('llama_vi_translation_enabled', isViTranslationEnabled ? 'true' : 'false');
+    updateLangBtnUI();
+
+    try {
+      if (dashboardFrame && dashboardFrame.contentWindow) {
+        dashboardFrame.contentWindow.postMessage({
+          type: 'SET_VI_TRANSLATION',
+          enabled: isViTranslationEnabled
+        }, '*');
+      }
+    } catch (e) {}
+  }
+
+  if (btnToggleLang) {
+    btnToggleLang.addEventListener('click', () => toggleViTranslation());
+  }
+
+  updateLangBtnUI();
+
+  if (dashboardFrame) {
+    dashboardFrame.addEventListener('load', () => {
+      try {
+        if (dashboardFrame.contentWindow) {
+          dashboardFrame.contentWindow.postMessage({
+            type: 'SET_VI_TRANSLATION',
+            enabled: isViTranslationEnabled
+          }, '*');
+        }
+      } catch (e) {}
+    });
+  }
 
   // =============================================
   // 1. Personal Note
