@@ -24,13 +24,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnStopActiveModel = document.getElementById('btnStopActiveModel');
   const serverStoppedState = document.getElementById('serverStoppedState');
 
+  const topbarCenter = document.getElementById('topbarCenter');
+  const overflowWrapper = document.getElementById('overflowWrapper');
   const btnTopbarOverflow = document.getElementById('btnTopbarOverflow');
   const overflowDropdown = document.getElementById('overflowDropdown');
-  const menuItemLoadModel = document.getElementById('menuItemLoadModel');
-  const menuItemDownloadModel = document.getElementById('menuItemDownloadModel');
-  const menuItemStopModel = document.getElementById('menuItemStopModel');
-  const menuItemCopyGateway = document.getElementById('menuItemCopyGateway');
-  const menuItemToggleMini = document.getElementById('menuItemToggleMini');
+  const overflowMenuList = document.getElementById('overflowMenuList');
 
   const miniControlsGroup = document.getElementById('miniControlsGroup');
   const btnMiniExit = document.getElementById('btnMiniExit');
@@ -48,14 +46,99 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let currentActiveModel = null;
 
+  // =============================================
+  // RESPONSIVE OVERFLOW DETECTION SYSTEM
+  // =============================================
+  // Action map: maps each overflow-item's ID to the click handler it should trigger
+  const overflowActionMap = {
+    'btnOpenModelModal': () => btnOpenModelModal.click(),
+    'loadModelWrapper': () => btnLoadModel.click(),
+    'activeModelBadge': () => btnStopActiveModel.click(),
+    'btnCopyGateway': () => btnCopyGateway.click(),
+    'btnToggleMini': () => setMiniModeState(),
+    'noteContainer': null, // Note input can't be triggered from overflow, skip
+  };
+
+  function updateOverflow() {
+    if (document.body.classList.contains('mini-window-active')) return;
+
+    const items = topbarCenter.querySelectorAll('.topbar-overflow-item');
+    const containerRect = topbarCenter.getBoundingClientRect();
+    const hiddenItems = [];
+
+    // First, reset all items to visible so we can measure their natural positions
+    items.forEach(item => {
+      item.classList.remove('overflow-hidden');
+    });
+
+    // Force layout recalc
+    void topbarCenter.offsetWidth;
+
+    // Now check which items overflow the container's right edge
+    items.forEach(item => {
+      // Skip items that are display:none (like hidden activeModelBadge)
+      if (item.offsetParent === null && item.classList.contains('hidden')) return;
+      
+      const itemRect = item.getBoundingClientRect();
+      // If the item's right edge exceeds the container's right edge, it's overflowed
+      if (itemRect.right > containerRect.right + 1) {
+        item.classList.add('overflow-hidden');
+        const label = item.getAttribute('data-overflow-label');
+        if (label) {
+          hiddenItems.push({ id: item.id, label: label });
+        }
+      }
+    });
+
+    // Rebuild the overflow dropdown menu with only hidden items
+    overflowMenuList.innerHTML = '';
+    hiddenItems.forEach(({ id, label }) => {
+      const menuItem = document.createElement('div');
+      menuItem.className = 'overflow-item';
+      menuItem.textContent = label;
+      menuItem.addEventListener('click', () => {
+        overflowDropdown.classList.add('hidden');
+        const action = overflowActionMap[id];
+        if (action) action();
+      });
+      overflowMenuList.appendChild(menuItem);
+    });
+
+    // Show/hide the ▼ overflow button based on whether any items are hidden
+    if (hiddenItems.length > 0) {
+      overflowWrapper.classList.remove('hidden');
+    } else {
+      overflowWrapper.classList.add('hidden');
+      overflowDropdown.classList.add('hidden');
+    }
+  }
+
+  // Use ResizeObserver to detect topbar width changes
+  const resizeObserver = new ResizeObserver(() => {
+    requestAnimationFrame(updateOverflow);
+  });
+  resizeObserver.observe(topbarCenter);
+
+  // Also run on window resize as a fallback
+  window.addEventListener('resize', () => {
+    requestAnimationFrame(updateOverflow);
+  });
+
+  // Initial check
+  setTimeout(updateOverflow, 100);
+
+  // =============================================
   // 1. Personal Note
+  // =============================================
   const savedNote = localStorage.getItem('llama_user_note');
   if (savedNote) noteInput.value = savedNote;
   noteInput.addEventListener('input', (e) => {
     localStorage.setItem('llama_user_note', e.target.value);
   });
 
+  // =============================================
   // 2. Gateway Copy Action
+  // =============================================
   btnCopyGateway.addEventListener('click', async () => {
     try {
       await window.electronAPI.copyText(GATEWAY_URL);
@@ -66,7 +149,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // =============================================
   // 3. Mini Window Mode Toggle Function
+  // =============================================
   async function setMiniModeState(forceState) {
     try {
       const res = await window.electronAPI.toggleMiniMode(forceState);
@@ -82,6 +167,8 @@ document.addEventListener('DOMContentLoaded', () => {
         btnToggleMini.classList.remove('active');
         btnToggleMini.innerHTML = '📌 Thu nhỏ & Ghim';
         btnToggleMini.title = 'Thu nhỏ cửa sổ & Ghim luôn trên cùng (Always On Top)';
+        // Re-check overflow after exiting mini mode
+        setTimeout(updateOverflow, 200);
       }
     } catch (err) {
       console.error('Failed to set mini mode state:', err);
@@ -105,7 +192,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // =============================================
   // 4. Overflow Dropdown Menu (▼)
+  // =============================================
   if (btnTopbarOverflow) {
     btnTopbarOverflow.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -113,31 +202,6 @@ document.addEventListener('DOMContentLoaded', () => {
       modelDropdown.classList.add('hidden');
     });
   }
-
-  menuItemLoadModel.addEventListener('click', () => {
-    overflowDropdown.classList.add('hidden');
-    btnLoadModel.click();
-  });
-
-  menuItemDownloadModel.addEventListener('click', () => {
-    overflowDropdown.classList.add('hidden');
-    btnOpenModelModal.click();
-  });
-
-  menuItemStopModel.addEventListener('click', () => {
-    overflowDropdown.classList.add('hidden');
-    btnStopActiveModel.click();
-  });
-
-  menuItemCopyGateway.addEventListener('click', () => {
-    overflowDropdown.classList.add('hidden');
-    btnCopyGateway.click();
-  });
-
-  menuItemToggleMini.addEventListener('click', () => {
-    overflowDropdown.classList.add('hidden');
-    setMiniModeState();
-  });
 
   // Close dropdowns on outside click
   document.addEventListener('click', (e) => {
@@ -149,7 +213,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // =============================================
   // 5. Model Download Modal
+  // =============================================
   btnOpenModelModal.addEventListener('click', async () => {
     modelModal.classList.remove('hidden');
     if (modelsFrame.src === 'about:blank' || !modelsFrame.src.includes('llama.app/models')) {
@@ -170,7 +236,9 @@ document.addEventListener('DOMContentLoaded', () => {
     modelModal.classList.add('hidden');
   });
 
+  // =============================================
   // 6. Clipboard Paste Button Action
+  // =============================================
   btnPasteCmd.addEventListener('click', async () => {
     try {
       const clipText = await window.electronAPI.readClipboard();
@@ -184,7 +252,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // =============================================
   // 7. Short Model Name & Alias Parser
+  // =============================================
   function parseModelInfo(rawCmd) {
     let clean = rawCmd.trim();
     let flag = '';
@@ -225,7 +295,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+  // =============================================
   // 8. Downloaded Model Storage
+  // =============================================
   function getSavedModels() {
     try {
       const list = localStorage.getItem('downloaded_models_list');
@@ -250,7 +322,9 @@ document.addEventListener('DOMContentLoaded', () => {
     renderModelDropdown();
   }
 
+  // =============================================
   // 9. Render Load Model Dropdown Menu
+  // =============================================
   function renderModelDropdown() {
     const models = getSavedModels();
     modelList.innerHTML = '';
@@ -304,7 +378,9 @@ document.addEventListener('DOMContentLoaded', () => {
     renderModelDropdown();
   });
 
+  // =============================================
   // 10. Download Model Execution
+  // =============================================
   async function triggerModelDownload() {
     const rawCmd = txtModelCmd.value.trim();
     if (!rawCmd) {
@@ -335,7 +411,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Enter') triggerModelDownload();
   });
 
+  // =============================================
   // 11. Load & Serve Model Function
+  // =============================================
   async function loadAndServeModel(modelObj) {
     currentActiveModel = modelObj;
     setLoadingState(
@@ -352,7 +430,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         activeModelName.textContent = modelObj.shortName;
         activeModelBadge.classList.remove('hidden');
-        menuItemStopModel.classList.remove('hidden');
+
+        // Re-check overflow since activeModelBadge is now visible
+        setTimeout(updateOverflow, 200);
 
         dashboardFrame.onload = () => {
           setTimeout(() => hideLoadingOverlay(), 500);
@@ -367,19 +447,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // =============================================
   // 12. Stop Active Model Server
+  // =============================================
   btnStopActiveModel.addEventListener('click', async () => {
     if (confirm('Bạn có chắc muốn tắt Model Server hiện tại để giải phóng RAM/VRAM?')) {
       await window.electronAPI.stopServer();
       activeModelBadge.classList.add('hidden');
-      menuItemStopModel.classList.add('hidden');
       serverStoppedState.classList.remove('hidden');
       dashboardFrame.src = 'about:blank';
       currentActiveModel = null;
+
+      // Re-check overflow since activeModelBadge is now hidden
+      setTimeout(updateOverflow, 200);
     }
   });
 
+  // =============================================
   // 13. Initial Setup Workflow
+  // =============================================
   async function runWorkflow() {
     renderModelDropdown();
     setLoadingState('Đang kiểm tra gói llama.app...', 'Đang quét hệ thống...');
@@ -416,8 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
         serverStoppedState.classList.add('hidden');
         activeModelName.textContent = 'Server Online';
         activeModelBadge.classList.remove('hidden');
-        menuItemStopModel.classList.remove('hidden');
-        setTimeout(() => hideLoadingOverlay(), 1000);
+        setTimeout(() => { hideLoadingOverlay(); updateOverflow(); }, 1000);
       } else {
         const saved = getSavedModels();
         if (saved.length > 0) {
@@ -427,7 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
           await window.electronAPI.startServer();
           dashboardFrame.src = DASHBOARD_URL;
           serverStoppedState.classList.add('hidden');
-          setTimeout(() => hideLoadingOverlay(), 2000);
+          setTimeout(() => { hideLoadingOverlay(); updateOverflow(); }, 2000);
         }
       }
 
@@ -456,3 +541,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   runWorkflow();
 });
+

@@ -19,19 +19,17 @@
       <span class="app-name">Llama</span>
     </div>
 
-    <!-- Center Main Action Items (Normal Mode) -->
-    <div class="topbar-actions-main" id="topbarActionsMain">
-      <button class="btn-topbar-action" id="btnOpenModelModal" title="Mở danh sách model và tải model">
+    <!-- Center: All action buttons in one flex row, overflow clipped -->
+    <div class="topbar-center" id="topbarCenter">
+      <button class="btn-topbar-action topbar-overflow-item" id="btnOpenModelModal" data-overflow-label="📥 Tải model" title="Mở danh sách model và tải model">
         📥 Tải model
       </button>
 
       <!-- Load Model Dropdown Container -->
-      <div class="dropdown-wrapper">
+      <div class="dropdown-wrapper topbar-overflow-item" id="loadModelWrapper" data-overflow-label="⚡ Load model">
         <button class="btn-topbar-action btn-load-model" id="btnLoadModel" title="Chọn và nạp model đã tải xuống">
           ⚡ Load model ▼
         </button>
-
-        <!-- Dropdown Popup directly underneath Load Model button -->
         <div class="dropdown-menu hidden" id="modelDropdown">
           <div class="dropdown-header">
             <span>Danh sách Model đã tải</span>
@@ -44,63 +42,53 @@
       </div>
 
       <!-- Active Loaded Model Badge & Stop Server Button -->
-      <div class="active-model-badge hidden" id="activeModelBadge">
+      <div class="active-model-badge hidden topbar-overflow-item" id="activeModelBadge" data-overflow-label="⏹ Tắt Server">
         <span class="active-dot"></span>
         <span class="active-model-name" id="activeModelName">Model: Qwen3.5</span>
         <button class="btn-stop-model" id="btnStopActiveModel" title="Tắt hẳn Llama Server & Nạp lại Dashboard trống">⏹ Tắt Server</button>
       </div>
 
-      <div class="gateway-badge" id="btnCopyGateway" title="Bấm để sao chép URL Gateway gọi Model">
+      <div class="gateway-badge topbar-overflow-item" id="btnCopyGateway" data-overflow-label="📋 Sao chép Gateway API" title="Bấm để sao chép URL Gateway gọi Model">
         <span class="gateway-label">Gateway API:</span>
         <code class="gateway-url">http://127.0.0.1:8080/v1</code>
         <button class="btn-copy" id="copyIcon">📋</button>
       </div>
       <span class="copy-toast" id="copyToast">✓ Đã copy!</span>
-    </div>
 
-    <!-- Right Section (Normal Controls & Mini Mode Dedicated Controls) -->
-    <div class="topbar-right">
-      <button class="btn-topbar-action btn-mini-mode" id="btnToggleMini" title="Chuyển chế độ Cửa sổ thu nhỏ & Ghim nổi (Always On Top)">
+      <button class="btn-topbar-action btn-mini-mode topbar-overflow-item" id="btnToggleMini" data-overflow-label="📌 Thu nhỏ & Ghim" title="Chuyển chế độ Cửa sổ thu nhỏ & Ghim nổi (Always On Top)">
         📌 Thu nhỏ & Ghim
       </button>
 
-      <div class="note-container" id="noteContainer">
+      <div class="note-container topbar-overflow-item" id="noteContainer" data-overflow-label="📝 Ghi chú cá nhân">
         <input type="text" id="noteInput" class="note-input" placeholder="📝 Ghi chú cá nhân (tự động lưu)..." spellcheck="false" />
       </div>
+    </div>
 
-      <!-- Overflow Dropdown Button (▼) for Small/Narrow Windows -->
-      <div class="dropdown-wrapper" id="overflowWrapper">
-        <button class="btn-topbar-action btn-overflow" id="btnTopbarOverflow" title="Menu tất cả chức năng thanh công cụ">
+    <!-- Right Section: Overflow ▼ always outside clip area -->
+    <div class="topbar-right">
+      <!-- Overflow Dropdown Button (▼) - only shown when items overflow -->
+      <div class="dropdown-wrapper overflow-trigger-wrapper hidden" id="overflowWrapper">
+        <button class="btn-topbar-action btn-overflow" id="btnTopbarOverflow" title="Xem thêm chức năng bị ẩn">
           ▼
         </button>
-
         <div class="dropdown-menu hidden dropdown-menu-right" id="overflowDropdown">
           <div class="dropdown-header">
-            <span>Menu Chức Năng Nhanh</span>
+            <span>Chức năng bị ẩn</span>
           </div>
-          <div class="dropdown-list overflow-menu-list">
-            <div class="overflow-item" id="menuItemLoadModel">⚡ Load Model</div>
-            <div class="overflow-item" id="menuItemDownloadModel">📥 Tải Model mới</div>
-            <div class="overflow-item hidden" id="menuItemStopModel">⏹ Tắt Server Model</div>
-            <div class="overflow-item" id="menuItemCopyGateway">📋 Sao chép Gateway API</div>
-            <div class="overflow-item" id="menuItemToggleMini">📌 Bật/Tắt Cửa sổ thu nhỏ</div>
+          <div class="dropdown-list overflow-menu-list" id="overflowMenuList">
+            <!-- Dynamically populated by JS -->
           </div>
         </div>
       </div>
 
       <!-- Mini Mode Dedicated 3 Controls (Shown ONLY in Mini Mode) -->
       <div class="mini-controls-group hidden" id="miniControlsGroup">
-        <!-- Nút 1: Exit Mini Mode (✕) -->
         <button class="mini-btn mini-btn-close" id="btnMiniExit" title="Thoát chế độ Thu nhỏ (Quay về cửa sổ lớn)">
           ✕
         </button>
-
-        <!-- Nút 2: Actions Dropdown (▼) -->
         <button class="mini-btn mini-btn-menu" id="btnMiniMenu" title="Menu chức năng thanh công cụ">
           ▼
         </button>
-
-        <!-- Nút 3: Drag Window Position (💠) -->
         <div class="mini-btn mini-btn-drag" id="btnMiniDrag" title="Ấn giữ 💠 để di chuyển vị trí cửa sổ">
           💠
         </div>

@@ -68,13 +68,30 @@ body {
   white-space: nowrap;
 }
 
-/* Center Main Actions (Normal Mode) */
-.topbar-actions-main {
+/* Center: All action buttons in one flex row */
+.topbar-center {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 1;
+  flex: 1;
+  min-width: 0;
   overflow: hidden;
+}
+
+/* Items that participate in overflow detection */
+.topbar-overflow-item {
+  flex-shrink: 0;
+}
+
+.topbar-overflow-item.overflow-hidden {
+  visibility: hidden;
+  position: absolute;
+  pointer-events: none;
+}
+
+/* Overflow trigger wrapper hidden by default */
+.overflow-trigger-wrapper.hidden {
+  display: none !important;
 }
 
 .btn-topbar-action {
@@ -423,6 +440,7 @@ body {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  margin-left: 8px;
 }
 
 .note-container {
@@ -548,31 +566,14 @@ body.mini-window-active .app-topbar {
 }
 
 body.mini-window-active .topbar-left,
-body.mini-window-active .topbar-actions-main,
-body.mini-window-active #btnToggleMini,
-body.mini-window-active #noteContainer {
+body.mini-window-active .topbar-center,
+body.mini-window-active #overflowWrapper {
   display: none !important;
 }
 
 body.mini-window-active .mini-controls-group {
   display: flex !important;
   margin-left: auto;
-}
-
-/* Responsive Hide Rules for Narrow Windows (Normal Mode) */
-@media (max-width: 1050px) {
-  .gateway-badge {
-    display: none !important;
-  }
-}
-
-@media (max-width: 820px) {
-  .topbar-actions-main {
-    display: none !important;
-  }
-  #overflowWrapper {
-    display: block !important;
-  }
 }
 
 /* Dashboard Viewport */
