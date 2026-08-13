@@ -75,7 +75,7 @@ body {
   gap: 8px;
   flex: 1;
   min-width: 0;
-  overflow: hidden;
+  margin-left: 8px;
 }
 
 /* Items that participate in overflow detection */
@@ -84,9 +84,7 @@ body {
 }
 
 .topbar-overflow-item.overflow-hidden {
-  visibility: hidden;
-  position: absolute;
-  pointer-events: none;
+  display: none !important;
 }
 
 /* Overflow trigger wrapper hidden by default */

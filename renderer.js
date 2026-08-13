@@ -49,48 +49,76 @@ document.addEventListener('DOMContentLoaded', () => {
   // =============================================
   // RESPONSIVE OVERFLOW DETECTION SYSTEM
   // =============================================
-  // Action map: maps each overflow-item's ID to the click handler it should trigger
   const overflowActionMap = {
     'btnOpenModelModal': () => btnOpenModelModal.click(),
     'loadModelWrapper': () => btnLoadModel.click(),
     'activeModelBadge': () => btnStopActiveModel.click(),
     'btnCopyGateway': () => btnCopyGateway.click(),
     'btnToggleMini': () => setMiniModeState(),
-    'noteContainer': null, // Note input can't be triggered from overflow, skip
+    'noteContainer': null,
   };
+
+  // Store original widths for each item (measured once when all visible)
+  let itemWidths = null;
+
+  function measureItemWidths() {
+    const items = topbarCenter.querySelectorAll('.topbar-overflow-item');
+    itemWidths = [];
+    items.forEach(item => {
+      item.classList.remove('overflow-hidden');
+    });
+    void topbarCenter.offsetWidth;
+    items.forEach(item => {
+      // Skip permanently hidden elements (like hidden activeModelBadge)
+      if (item.classList.contains('hidden')) {
+        itemWidths.push({ el: item, width: 0, isHidden: true });
+      } else {
+        itemWidths.push({ el: item, width: item.offsetWidth, isHidden: false });
+      }
+    });
+  }
 
   function updateOverflow() {
     if (document.body.classList.contains('mini-window-active')) return;
 
-    const items = topbarCenter.querySelectorAll('.topbar-overflow-item');
-    const containerRect = topbarCenter.getBoundingClientRect();
+    // Re-measure item widths (they may change when model badge shows/hides)
+    measureItemWidths();
+
+    const appTopbar = document.getElementById('appTopbar');
+    const topbarLeft = document.querySelector('.topbar-left');
+    const topbarRight = document.querySelector('.topbar-right');
+
+    const totalWidth = appTopbar.offsetWidth;
+    const leftWidth = topbarLeft.offsetWidth;
+    const rightWidth = topbarRight.offsetWidth;
+    const padding = 24; // topbar padding (12px * 2)
+    const centerMargin = 8; // margin-left on topbar-center
+    const availableWidth = totalWidth - leftWidth - rightWidth - padding - centerMargin - 8;
+
+    const gap = 8; // gap between items
+    let usedWidth = 0;
     const hiddenItems = [];
 
-    // First, reset all items to visible so we can measure their natural positions
-    items.forEach(item => {
-      item.classList.remove('overflow-hidden');
-    });
+    itemWidths.forEach(({ el, width, isHidden }) => {
+      if (isHidden) {
+        el.classList.remove('overflow-hidden');
+        return;
+      }
 
-    // Force layout recalc
-    void topbarCenter.offsetWidth;
-
-    // Now check which items overflow the container's right edge
-    items.forEach(item => {
-      // Skip items that are display:none (like hidden activeModelBadge)
-      if (item.offsetParent === null && item.classList.contains('hidden')) return;
-      
-      const itemRect = item.getBoundingClientRect();
-      // If the item's right edge exceeds the container's right edge, it's overflowed
-      if (itemRect.right > containerRect.right + 1) {
-        item.classList.add('overflow-hidden');
-        const label = item.getAttribute('data-overflow-label');
+      const neededWidth = usedWidth > 0 ? width + gap : width;
+      if (usedWidth + neededWidth <= availableWidth) {
+        el.classList.remove('overflow-hidden');
+        usedWidth += neededWidth;
+      } else {
+        el.classList.add('overflow-hidden');
+        const label = el.getAttribute('data-overflow-label');
         if (label) {
-          hiddenItems.push({ id: item.id, label: label });
+          hiddenItems.push({ id: el.id, label: label });
         }
       }
     });
 
-    // Rebuild the overflow dropdown menu with only hidden items
+    // Rebuild the overflow dropdown
     overflowMenuList.innerHTML = '';
     hiddenItems.forEach(({ id, label }) => {
       const menuItem = document.createElement('div');
@@ -104,7 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
       overflowMenuList.appendChild(menuItem);
     });
 
-    // Show/hide the ▼ overflow button based on whether any items are hidden
     if (hiddenItems.length > 0) {
       overflowWrapper.classList.remove('hidden');
     } else {
@@ -117,15 +144,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const resizeObserver = new ResizeObserver(() => {
     requestAnimationFrame(updateOverflow);
   });
-  resizeObserver.observe(topbarCenter);
+  resizeObserver.observe(document.getElementById('appTopbar'));
 
-  // Also run on window resize as a fallback
   window.addEventListener('resize', () => {
     requestAnimationFrame(updateOverflow);
   });
 
-  // Initial check
-  setTimeout(updateOverflow, 100);
+  setTimeout(updateOverflow, 200);
 
   // =============================================
   // 1. Personal Note
