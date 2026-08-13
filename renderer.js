@@ -34,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const miniControlsGroup = document.getElementById('miniControlsGroup');
   const btnMiniExit = document.getElementById('btnMiniExit');
   const btnMiniMenu = document.getElementById('btnMiniMenu');
-  const btnMiniDrag = document.getElementById('btnMiniDrag');
 
   const btnWinMinimize = document.getElementById('btnWinMinimize');
   const btnWinMaximize = document.getElementById('btnWinMaximize');

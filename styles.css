@@ -552,27 +552,6 @@ body {
   box-shadow: 0 0 14px rgba(168, 85, 247, 0.6);
 }
 
-/* Nút 3: Move / Drag Handle (💠) - Gold Glow */
-.mini-btn-drag {
-  background: rgba(245, 158, 11, 0.25);
-  border: 1px solid rgba(245, 158, 11, 0.6);
-  color: #fde047;
-  cursor: grab;
-  -webkit-app-region: drag !important;
-}
-
-.mini-btn-drag:hover {
-  background: rgba(245, 158, 11, 0.85);
-  border-color: #f59e0b;
-  color: #000;
-  transform: scale(1.08);
-  box-shadow: 0 0 14px rgba(245, 158, 11, 0.7);
-}
-
-.mini-btn-drag:active {
-  cursor: grabbing;
-}
-
 /* Normal Window Control Buttons (–, □, ✕) */
 .window-controls-normal {
   display: flex;
