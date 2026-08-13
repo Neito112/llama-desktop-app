@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Llama Desktop</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Ultra-slim 1-Line Responsive Topbar -->
+  <header class="app-topbar" id="appTopbar">
+    <!-- Left Section (Logo & Brand) -->
+    <div class="topbar-left">
+      <span class="app-logo">🦙</span>
+      <span class="app-name">Llama</span>
+    </div>
+
+    <!-- Center Main Action Items (Normal Mode) -->
+    <div class="topbar-actions-main" id="topbarActionsMain">
+      <button class="btn-topbar-action" id="btnOpenModelModal" title="Mở danh sách model và tải model">
+        📥 Tải model
+      </button>
+
+      <!-- Load Model Dropdown Container -->
+      <div class="dropdown-wrapper">
+        <button class="btn-topbar-action btn-load-model" id="btnLoadModel" title="Chọn và nạp model đã tải xuống">
+          ⚡ Load model ▼
+        </button>
+
+        <!-- Dropdown Popup directly underneath Load Model button -->
+        <div class="dropdown-menu hidden" id="modelDropdown">
+          <div class="dropdown-header">
+            <span>Danh sách Model đã tải</span>
+            <button class="btn-clear-history" id="btnClearModelHistory" title="Xóa lịch sử danh sách">🗑 Xóa danh sách</button>
+          </div>
+          <div class="dropdown-list" id="modelList">
+            <div class="dropdown-empty" id="dropdownEmpty">Chưa có model nào. Hãy tải model từ nút "Tải model"!</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Loaded Model Badge & Stop Server Button -->
+      <div class="active-model-badge hidden" id="activeModelBadge">
+        <span class="active-dot"></span>
+        <span class="active-model-name" id="activeModelName">Model: Qwen3.5</span>
+        <button class="btn-stop-model" id="btnStopActiveModel" title="Tắt hẳn Llama Server & Nạp lại Dashboard trống">⏹ Tắt Server</button>
+      </div>
+
+      <div class="gateway-badge" id="btnCopyGateway" title="Bấm để sao chép URL Gateway gọi Model">
+        <span class="gateway-label">Gateway API:</span>
+        <code class="gateway-url">http://127.0.0.1:8080/v1</code>
+        <button class="btn-copy" id="copyIcon">📋</button>
+      </div>
+      <span class="copy-toast" id="copyToast">✓ Đã copy!</span>
+    </div>
+
+    <!-- Right Section (Normal Controls & Mini Mode Dedicated Controls) -->
+    <div class="topbar-right">
+      <button class="btn-topbar-action btn-mini-mode" id="btnToggleMini" title="Chuyển chế độ Cửa sổ thu nhỏ & Ghim nổi (Always On Top)">
+        📌 Thu nhỏ & Ghim
+      </button>
+
+      <div class="note-container" id="noteContainer">
+        <input type="text" id="noteInput" class="note-input" placeholder="📝 Ghi chú cá nhân (tự động lưu)..." spellcheck="false" />
+      </div>
+
+      <!-- Overflow Dropdown Button (▼) for Small/Narrow Windows -->
+      <div class="dropdown-wrapper" id="overflowWrapper">
+        <button class="btn-topbar-action btn-overflow" id="btnTopbarOverflow" title="Menu tất cả chức năng thanh công cụ">
+          ▼
+        </button>
+
+        <div class="dropdown-menu hidden dropdown-menu-right" id="overflowDropdown">
+          <div class="dropdown-header">
+            <span>Menu Chức Năng Nhanh</span>
+          </div>
+          <div class="dropdown-list overflow-menu-list">
+            <div class="overflow-item" id="menuItemLoadModel">⚡ Load Model</div>
+            <div class="overflow-item" id="menuItemDownloadModel">📥 Tải Model mới</div>
+            <div class="overflow-item hidden" id="menuItemStopModel">⏹ Tắt Server Model</div>
+            <div class="overflow-item" id="menuItemCopyGateway">📋 Sao chép Gateway API</div>
+            <div class="overflow-item" id="menuItemToggleMini">📌 Bật/Tắt Cửa sổ thu nhỏ</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mini Mode Dedicated 3 Controls (Shown ONLY in Mini Mode) -->
+      <div class="mini-controls-group hidden" id="miniControlsGroup">
+        <!-- Nút 1: Exit Mini Mode (✕) -->
+        <button class="mini-btn mini-btn-close" id="btnMiniExit" title="Thoát chế độ Thu nhỏ (Quay về cửa sổ lớn)">
+          ✕
+        </button>
+
+        <!-- Nút 2: Actions Dropdown (▼) -->
+        <button class="mini-btn mini-btn-menu" id="btnMiniMenu" title="Menu chức năng thanh công cụ">
+          ▼
+        </button>
+
+        <!-- Nút 3: Drag Window Position (💠) -->
+        <div class="mini-btn mini-btn-drag" id="btnMiniDrag" title="Ấn giữ 💠 để di chuyển vị trí cửa sổ">
+          💠
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Viewport: Pure Llama Dashboard -->
+  <main class="dashboard-viewport">
+    <iframe id="dashboardFrame" src="about:blank" allow="clipboard-read; clipboard-write"></iframe>
+
+    <!-- Offline state when server is stopped -->
+    <div class="server-stopped-state hidden" id="serverStoppedState">
+      <div class="stopped-card">
+        <div class="stopped-icon">🦙</div>
+        <h2>Server chưa nạp Model nào</h2>
+        <p>Bấm nút <strong>⚡ Load model</strong> ở thanh trên cùng để chọn và khởi chạy model bạn đã tải!</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Model Download Pop-up Modal -->
+  <div class="modal-overlay hidden" id="modelModal">
+    <div class="modal-window">
+      <div class="modal-topbar">
+        <div class="modal-title-group">
+          <span class="modal-icon">📥</span>
+          <span class="modal-title">Tải Model</span>
+        </div>
+        <div class="download-bar">
+          <input type="text" id="txtModelCmd" class="modal-cmd-input" placeholder="Nhập tên model hoặc dán lệnh (Ví dụ: llama-3.2-1b)..." spellcheck="false" />
+          <button class="btn-paste" id="btnPasteCmd" title="Dán lệnh từ Clipboard">📋 Dán</button>
+          <button class="btn-download" id="btnExecDownload">⬇ Download</button>
+        </div>
+        <button class="btn-close-modal" id="btnCloseModal" title="Đóng cửa sổ">✕</button>
+      </div>
+      <div class="modal-body">
+        <iframe id="modelsFrame" src="about:blank" allow="clipboard-read; clipboard-write"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- Compact Centered Loading & Status Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-card">
+      <div class="spinner-ring" id="spinner"></div>
+      <div class="loading-brand">🦙 Llama Desktop</div>
+      <h3 class="loading-title" id="loadingTitle">Đang kiểm tra trạng thái llama.app...</h3>
+      <p class="loading-subtext" id="loadingSubtext">Đang kết nối hệ thống...</p>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

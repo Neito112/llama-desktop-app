@@ -1,0 +1,53 @@
+{
+  "name": "llama-desktop-app",
+  "version": "1.0.0",
+  "description": "Llama Desktop App - Portable standalone app for Windows and Linux Bazzite",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win portable --x64",
+    "build:linux": "electron-builder --linux tar.gz dir --x64",
+    "build:all": "electron-builder -w -l --x64"
+  },
+  "build": {
+    "appId": "com.llama.desktop",
+    "productName": "Llama Desktop",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!dist/*"
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "icon.png"
+    },
+    "linux": {
+      "target": [
+        "tar.gz",
+        "dir"
+      ],
+      "category": "Utility",
+      "icon": "icon.png"
+    },
+    "portable": {
+      "artifactName": "Llama-Desktop-Portable-Windows.exe"
+    }
+  },
+  "keywords": [
+    "llama",
+    "llama.app",
+    "electron",
+    "desktop-app",
+    "portable",
+    "bazzite",
+    "windows"
+  ],
+  "author": "Antigravity AI",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^34.2.0",
+    "electron-builder": "^25.1.8"
+  }
+}
