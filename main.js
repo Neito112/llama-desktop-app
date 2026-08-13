@@ -278,6 +278,21 @@ function createWindow() {
   });
 }
 
+// Enforce Single Instance Lock to prevent duplicate system tray icons and background processes
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  });
+}
+
 app.whenReady().then(() => {
   session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
     callback(true);
@@ -295,14 +310,24 @@ app.whenReady().then(() => {
   });
 });
 
+app.on('before-quit', () => {
+  app.isQuitting = true;
+  if (tray) {
+    try { tray.destroy(); } catch (e) {}
+    tray = null;
+  }
+  if (serverProcess) {
+    try { serverProcess.kill(); } catch (e) {}
+    serverProcess = null;
+  }
+  if (proxyServer) {
+    try { proxyServer.close(); } catch (e) {}
+    proxyServer = null;
+  }
+});
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin' && app.isQuitting) {
-    if (serverProcess) {
-      try { serverProcess.kill(); } catch (e) {}
-    }
-    if (proxyServer) {
-      try { proxyServer.close(); } catch (e) {}
-    }
     app.quit();
   }
 });
