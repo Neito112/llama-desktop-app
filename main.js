@@ -250,6 +250,7 @@ function createWindow() {
     height: 860,
     minWidth: 360,
     minHeight: 480,
+    frame: false,
     title: 'Llama Desktop',
     backgroundColor: '#0f0f0f',
     webPreferences: {
@@ -583,6 +584,21 @@ ipcMain.handle('get-translation-script', () => {
     console.error('Failed to read vi-translation.js:', err);
     return null;
   }
+});
+
+ipcMain.handle('minimize-window', () => {
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.minimize();
+});
+
+ipcMain.handle('maximize-window', () => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    if (mainWindow.isMaximized()) mainWindow.unmaximize();
+    else mainWindow.maximize();
+  }
+});
+
+ipcMain.handle('close-window', () => {
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.close();
 });
 
 function sendInstallLog(text) {

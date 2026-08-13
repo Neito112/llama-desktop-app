@@ -36,6 +36,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnMiniMenu = document.getElementById('btnMiniMenu');
   const btnMiniDrag = document.getElementById('btnMiniDrag');
 
+  const btnWinMinimize = document.getElementById('btnWinMinimize');
+  const btnWinMaximize = document.getElementById('btnWinMaximize');
+  const btnWinClose = document.getElementById('btnWinClose');
+
+  if (btnWinMinimize) btnWinMinimize.addEventListener('click', () => window.electronAPI.minimizeWindow());
+  if (btnWinMaximize) btnWinMaximize.addEventListener('click', () => window.electronAPI.maximizeWindow());
+  if (btnWinClose) btnWinClose.addEventListener('click', () => window.electronAPI.closeWindow());
+
   const dashboardFrame = document.getElementById('dashboardFrame');
   const loadingOverlay = document.getElementById('loadingOverlay');
   const loadingTitle = document.getElementById('loadingTitle');

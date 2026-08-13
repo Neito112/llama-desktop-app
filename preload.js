@@ -10,6 +10,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   readClipboard: () => ipcRenderer.invoke('read-clipboard'),
   getTranslationScript: () => ipcRenderer.invoke('get-translation-script'),
   toggleMiniMode: (forceState) => ipcRenderer.invoke('toggle-mini-mode', forceState),
+  minimizeWindow: () => ipcRenderer.invoke('minimize-window'),
+  maximizeWindow: () => ipcRenderer.invoke('maximize-window'),
+  closeWindow: () => ipcRenderer.invoke('close-window'),
   onInstallLog: (callback) => ipcRenderer.on('install-log', (event, data) => callback(data)),
   onServerLog: (callback) => ipcRenderer.on('server-log', (event, data) => callback(data)),
   onServerStatusChanged: (callback) => ipcRenderer.on('server-status-changed', (event, status) => callback(status))
