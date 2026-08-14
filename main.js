@@ -7,6 +7,14 @@ const fs = require('fs');
 const os = require('os');
 const zlib = require('zlib');
 
+// Global Exception Handler to prevent crash popups
+process.on('uncaughtException', (err) => {
+  console.error('[Main] Prevented crash from uncaught exception:', err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Main] Unhandled Rejection:', reason);
+});
+
 let mainWindow = null;
 let tray = null;
 let serverProcess = null;
@@ -193,9 +201,21 @@ function startProxyServer() {
     req.pipe(proxyReq, { end: true });
   });
 
-  proxyServer.listen(PROXY_PORT, '127.0.0.1', () => {
-    console.log(`[Proxy] Translation proxy server listening on http://127.0.0.1:${PROXY_PORT}`);
+  proxyServer.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.warn(`[Proxy] Port ${PROXY_PORT} is already in use (EADDRINUSE). Proxy is active.`);
+    } else {
+      console.error('[Proxy] Server error:', err);
+    }
   });
+
+  try {
+    proxyServer.listen(PROXY_PORT, '127.0.0.1', () => {
+      console.log(`[Proxy] Translation proxy server listening on http://127.0.0.1:${PROXY_PORT}`);
+    });
+  } catch (err) {
+    console.warn('[Proxy] Failed to listen on port 8081:', err);
+  }
 }
 
 function createTray() {
